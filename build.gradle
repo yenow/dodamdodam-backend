@@ -1,0 +1,84 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.0.1'
+    id 'io.spring.dependency-management' version '1.1.0'
+    id 'com.ewerk.gradle.plugins.querydsl' version '1.0.10'
+}
+
+group = 'com.ysy'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    /* basic */
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    /* DB, JPA */
+    implementation 'mysql:mysql-connector-java'
+    implementation 'com.h2database:h2'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    /* QueryDSL */
+    implementation 'com.querydsl:querydsl-jpa'
+
+    /* security */
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
+//	implementation 'io.jsonwebtoken:jjwt:0.9.1'
+//    implementation "javax.xml.bind:jaxb-api"
+
+    /* jjwt */
+//    compileOnly 'io.jsonwebtoken:jjwt-api:0.11.2'
+//    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2'
+//    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.2'
+
+    /* lombok */
+    implementation 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    /* log */
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.6'
+
+    /* model mapper */
+    implementation 'org.modelmapper:modelmapper:3.0.0'
+
+    /* etc */
+    implementation 'org.apache.commons:commons-lang3'
+    implementation 'commons-fileupload:commons-fileupload:1.4'
+
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+
+    implementation 'org.springframework.boot:spring-boot-starter'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+
+//querydsl 추가 시작
+def querydslDir = "$buildDir/generated/querydsl"
+querydsl {
+    jpa = true
+    querydslSourcesDir = querydslDir
+}
+sourceSets {
+    main.java.srcDir querydslDir
+}
+configurations {
+    querydsl.extendsFrom compileClasspath
+}
+compileQuerydsl {
+    options.annotationProcessorPath = configurations.querydsl
+}
+//querydsl 추가 끝
+
+/** * comileQuerydsl.doFirst 추가 */
+compileQuerydsl.doFirst { if(file(querydslDir).exists() ) delete(file(querydslDir)) }
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
