@@ -9,6 +9,12 @@ group = 'com.ysy'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -23,12 +29,14 @@ dependencies {
     implementation 'mysql:mysql-connector-java'
     implementation 'com.h2database:h2'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
     /* QueryDSL */
-    implementation 'com.querydsl:querydsl-jpa'
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
 
     /* security */
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    testImplementation 'org.springframework.security:spring-security-test'
+//    implementation 'org.springframework.boot:spring-boot-starter-security'
+//    testImplementation 'org.springframework.security:spring-security-test'
 //	implementation 'io.jsonwebtoken:jjwt:0.9.1'
 //    implementation "javax.xml.bind:jaxb-api"
 
@@ -42,6 +50,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     /* log */
+//    p6spy:p6spy:3.9.1
     implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.6'
 
     /* model mapper */
@@ -58,8 +67,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
-
-//querydsl 추가 시작
+//region querydsl 설정
 def querydslDir = "$buildDir/generated/querydsl"
 querydsl {
     jpa = true
@@ -74,11 +82,13 @@ configurations {
 compileQuerydsl {
     options.annotationProcessorPath = configurations.querydsl
 }
-//querydsl 추가 끝
+//endregion
 
-/** * comileQuerydsl.doFirst 추가 */
-compileQuerydsl.doFirst { if(file(querydslDir).exists() ) delete(file(querydslDir)) }
+/* compileQuerydsl.doFirst 추가 */
+compileQuerydsl.doFirst {
+    if (file(querydslDir).exists()) delete(file(querydslDir))
+}
 
-tasks.named('test') {
-    useJUnitPlatform()
+compileJava.doFirst {
+    if (file(querydslDir).exists()) delete(file(querydslDir))
 }
